@@ -1,0 +1,53 @@
+name: nx-libs CI
+
+on:
+  push:
+    branches: [ 3.6.x ]
+  pull_request:
+    branches: [ 3.6.x ]
+
+jobs:
+ build:
+  name: Build on ${{ matrix.cfg.container }} - ${{ matrix.cfg.cpp-version }}
+  runs-on: ubuntu-latest
+  container: ${{ matrix.cfg.container }}
+  strategy:
+    fail-fast: false
+    matrix:
+      cfg:
+        - { container: 'ubuntu:16.04', cpp-version: gcc }
+        - { container: 'ubuntu:16.04', cpp-version: clang }
+        - { container: 'ubuntu:20.04', cpp-version: gcc }
+        - { container: 'ubuntu:20.04', cpp-version: clang }
+        - { container: 'buster:latest', cpp-version: gcc }
+        - { container: 'buster:latest', cpp-version: clang }
+        - { container: 'centos:7', cpp-version: gcc }
+        - { container: 'centos:7', cpp-version: clang }
+        - { container: 'fedora:latest', cpp-version: gcc }
+        - { container: 'fedora:latest', cpp-version: clang }
+        - { container: 'buster:latest', cpp-version: gcc }
+        - { container: 'buster:latest', cpp-version: clang }
+
+  steps:
+  - name: Install compiler ${{ matrix.cfg.cpp-version }}
+    run: |
+      case "${{ matrix.cfg.container }}" in
+        ubuntu*|buster)
+          apt-get update -q -y
+          apt-get install -q -y ${{ matrix.cfg.cpp-version }}
+          cat /etc/debian_version
+          ${{ matrix.cfg.container }} --version
+          ;;
+        fedora*)
+          dnf -y update
+          dnf -y install ${{ matrix.cfg.cpp-version }}
+          cat /etc/fedora-release
+          ${{ matrix.cfg.container }} --version
+        centos*)
+          yum -y update
+          yum -y install ${{ matrix.cfg.cpp-version }}
+          cat /etc/centos-release
+          ${{ matrix.cfg.container }} --version
+          ;;
+      esac
+    shell: bash
